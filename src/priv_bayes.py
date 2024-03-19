@@ -33,6 +33,9 @@ def greedy_bayes_no_mp(dataset: DataFrame, k: int, epsilon: float, seed=0):
     seed : int or float
         Seed for the randomness in BN generation.
     """
+
+    # k è il numero massimo di parent che puoi avere
+
     print('================ Inizio ================')
     set_random_seed(seed)
     dataset: DataFrame = dataset.astype(str, copy=False)
@@ -65,7 +68,7 @@ def greedy_bayes_no_mp(dataset: DataFrame, k: int, epsilon: float, seed=0):
         print('range', len(V) - num_parents + 1)
 
         res_list = []
-        # ogni task cerca il migliore set ti parent per un dato attributo tra quelli rimanenti
+        # ogni task cerca il migliore set di parent per un dato attributo tra quelli rimanenti
         for task in tasks:
             res = worker(task)
             res_list.append(res)
@@ -182,17 +185,44 @@ def calculate_k(num_attributes, num_tuples, target_usefulness=4, epsilon=0.1):
 
 
 def worker(paras):
+    """
+    Restituisce una lista di attributi child - parent e di relativi valori di mutual information
+    """
+
+
+    # child è l'attributo che cerco di instanziare come attributo figlio
+    # viene preso dalla lista degli attributi rimanenti
+    # ---
+    # V è l'insieme dei nodi già assegnati, ossia i parents
+    # ---
+    # num parents dipende dal degree della network
+    # se il numero di parent possibili è più piccolo coincide con quel valore
+    # ---
+    # split non è chiaro a cosa serva. Va da 0 a len(V) - n_parents + 1
+    #
+    # ---
+    # dataset è il dataset, utile per calcolare le metriche
     child, V, num_parents, split, dataset = paras
     parents_pair_list = []
     mutual_info_list = []
 
+    # in pratica questo controlla che non superi il valore ????
+    print('split', split, type(split))
+    print('num_parents', num_parents, type(num_parents))
     if split + num_parents - 1 < len(V):
+        # split sembra che serva a considerare uno specifico parent
+        # gli other parents sono tutti i parent a destra del parent selezionato dallo split
+        # combinations ha come primo argomento la lista di elementi di cui si vogliono ottenere le combinazioni
+        # come secondo argomento ha il numero di elementi all'interno della combinazione
         for other_parents in combinations(V[split + 1:], num_parents - 1):
+            print('combinazioni valutate', list(combinations(V[split + 1:], num_parents - 1)))
             parents = list(other_parents)
             parents.append(V[split])
+            # coppia child parents candidata
             parents_pair_list.append((child, parents))
             # TODO consider to change the computation of MI by combined integers instead of strings.
             mi = mutual_information(dataset[child], dataset[parents])
+            # calcolato con scikit
             mutual_info_list.append(mi)
 
     return parents_pair_list, mutual_info_list
