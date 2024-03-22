@@ -107,9 +107,9 @@ ENV/
 
 # This project
 **/\.DS_Store
-tests/data/output.csv
-tests/data/description.json
-tests/data/output_uniform.csv
+original/tests/data/output.csv
+original/tests/data/description.json
+original/tests/data/output_uniform.csv
 webUI/db.sqlite3
 webUI/media/*.csv
 webUI/media/*.json
